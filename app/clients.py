@@ -39,13 +39,13 @@ def create_client(
 
 @router.get(
     "/",
-    response_model=List[schemas.ClientRead],
-    dependencies=[Depends(require_role(schemas.UserRole.portal_admin))]
+    response_model=List[schemas.ClientRead]
 )
 def list_clients(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(schemas.UserRole.portal_admin)),
 ):
     return crud.get_clients(db, skip=skip, limit=limit)
 

@@ -4,7 +4,7 @@ CREATE TABLE role (
     permissions TEXT
 );
 
-CREATE TABLE client (
+CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     contact_email VARCHAR(100),
@@ -29,9 +29,9 @@ CREATE TABLE tariff (
     limits JSONB
 );
 
-CREATE TABLE client_service (
+CREATE TABLE clients_service (
     id SERIAL PRIMARY KEY,
-    client_id INTEGER NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+    clients_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
     service_id INTEGER NOT NULL REFERENCES service(id) ON DELETE CASCADE,
     tariff_id INTEGER REFERENCES tariff(id) ON DELETE SET NULL,
     subscribed_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -44,7 +44,7 @@ CREATE TABLE "user" (
     password_hash VARCHAR(256) NOT NULL,
     name VARCHAR(100),
     role_id INTEGER REFERENCES role(id) ON DELETE SET NULL,
-    client_id INTEGER REFERENCES client(id) ON DELETE SET NULL,
+    clients_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -52,7 +52,7 @@ CREATE TABLE "user" (
 CREATE TABLE user_service (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    client_service_id INTEGER NOT NULL REFERENCES client_service(id) ON DELETE CASCADE,
+    clients_service_id INTEGER NOT NULL REFERENCES clients_service(id) ON DELETE CASCADE,
     granted_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

@@ -73,7 +73,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 def require_role(role: schemas.UserRole):
     def role_checker(current_user: models.User = Depends(get_current_user)):
-        if current_user.role != role:
+        # сравниваем как строки!
+        if str(current_user.role) != str(role):
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         return current_user
     return role_checker
