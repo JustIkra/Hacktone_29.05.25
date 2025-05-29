@@ -13,7 +13,10 @@ class Client(Base):
     __tablename__ = "clients"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
-    tariff = Column(String, nullable=False)
+    # tariff_id если нужен внешний ключ, а не строка!
+    # tariff_id = Column(Integer, ForeignKey("tariffs.id"), nullable=True)
+    # тариф как просто строка:
+    tariff = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     users = relationship("User", back_populates="client")
     client_services = relationship("ClientService", back_populates="client")
@@ -25,7 +28,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=True)
     password_hash = Column(String, nullable=False)
     role = Column(Enum(UserRole), default=UserRole.user)
-    client_id = Column(Integer, ForeignKey("clients.id"))
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)  # <- Вот здесь nullable=True
     client = relationship("Client", back_populates="users")
 
 class Service(Base):

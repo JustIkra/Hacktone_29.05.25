@@ -31,7 +31,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 @router.post("/register", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
-def register(user_in: schemas.UserCreate, db: Session = Depends(database.SessionLocal)):
+def register(user_in: schemas.UserCreate, db: Session = Depends(database.get_db)):
     # Проверяем, что username уникален
     if crud.get_user_by_username(db, user_in.username):
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -40,7 +40,7 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(database.Session
 
 
 @router.post("/login", response_model=schemas.Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.SessionLocal)):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
     user = crud.get_user_by_username(db, form_data.username)
     if not user or not utils.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -52,7 +52,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.SessionLocal)) -> models.User:
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
