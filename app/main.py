@@ -1,20 +1,27 @@
-# app/main.py
-
 from fastapi import FastAPI
-from database import init_db
-import  auth, users, clients, services, clientservices, tariffs, user_service, usage
+from init_db import init_db
 
+# Импорт роутеров из текущей папки
+import auth
+import users
+import clients
+import services
+import clientservices
+import tariffs
+import user_service
+import usage
 
-# Инициализация базы (создание таблиц) – для прототипа
+# Инициализация БД (создаёт таблицы)
 init_db()
 
+# Инициализация приложения
 app = FastAPI(
-    title="Гendalf Services Portal",
+    title="Gendalf Services Portal",
     description="API для управления клиентами, сервисами и тарифами",
     version="0.1.0",
 )
 
-# Роутеры
+# Подключение роутеров
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(clients.router)
