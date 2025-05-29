@@ -10,6 +10,8 @@ import clientservices
 import tariffs
 import user_service
 import usage
+import uvicorn
+
 
 # Инициализация БД (создаёт таблицы)
 init_db()
@@ -30,3 +32,7 @@ app.include_router(clientservices.router)
 app.include_router(tariffs.router)
 app.include_router(user_service.router)
 app.include_router(usage.router)
+
+if __name__ == "__main__":
+    init_db()
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
