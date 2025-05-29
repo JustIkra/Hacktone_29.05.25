@@ -1,52 +1,33 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
-import httpx
+# app/main.py
 
-app = FastAPI()
+from fastapi import FastAPI
+from app.database import init_db
+from app.routers import (
+    auth,
+    users,
+    clients,
+    services,
+    clientservices,
+    tariffs,
+    user_service,
+    usage,
+)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# Инициализация базы (создание таблиц) – для прототипа
+init_db()
 
-SERVICES = {
-    "user": "http://user-service:8001",
-    "auth": "http://auth-service:8002",
-    "service": "http://service-manager:8003",
-    "report": "http://reporting-service:8004"
-}
+app = FastAPI(
+    title="Гendalf Services Portal",
+    description="API для управления клиентами, сервисами и тарифами",
+    version="0.1.0",
+)
 
-async def verify_token(token: str = Depends(oauth2_scheme)):
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{SERVICES['auth']}/verify",
-            json={"token": token}
-        )
-        if response.status_code != 200:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return response.json()
-
-@app.get("/{service_name}/{path:path}")
-async def route_request(
-    service_name: str,
-    path: str,
-    token_data: dict = Depends(verify_token),
-    params: dict = {}
-):
-    if service_name not in SERVICES:
-        raise HTTPException(status_code=404, detail="Service not found")
-    
-    # Проверка прав доступа к сервису
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{SERVICES['service']}/check-access",
-            json={
-                "user_id": token_data["user_id"],
-                "service": service_name
-            }
-        )
-        if not response.json().get("has_access"):
-            raise HTTPException(status_code=403, detail="Access denied")
-    
-    async with httpx.AsyncClient() as client:
-        service_url = f"{SERVICES[service_name]}/{path}"
-        response = await client.get(service_url, params=params)
-        return response.json()
+# Роутеры
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(clients.router)
+app.include_router(services.router)
+app.include_router(clientservices.router)
+app.include_router(tariffs.router)
+app.include_router(user_service.router)
+app.include_router(usage.router)
