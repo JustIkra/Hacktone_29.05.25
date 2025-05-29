@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    container_name: gandalf-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: gandalf_portal
+      POSTGRES_USER: gandalf_user
+      POSTGRES_PASSWORD: strong_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: gandalf-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+  redis:
+    image: redis:7
+    container_name: gandalf-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  pgdata:
+  redis_data:

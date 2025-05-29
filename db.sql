@@ -1,47 +1,66 @@
-CREATE TABLE Tariffs (
+CREATE TABLE role (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    permissions TEXT
+);
+
+CREATE TABLE client (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    max_users INTEGER NOT NULL,
-    max_services INTEGER NOT NULL,
-    period_days INTEGER NOT NULL,
-    price NUMERIC(12, 2) NOT NULL
+    contact_email VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE Clients (
+CREATE TABLE service (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    tariff_id INTEGER NOT NULL REFERENCES Tarrifs(id),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    description TEXT,
+    api_endpoint VARCHAR(256),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE Users (
+CREATE TABLE tariff (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(256) UNIQUE NOT NULL,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(256) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('portal_admin', 'client_admin', 'user')),
-    client_id INTEGER REFERENCES Clients(id)
-);
-
-CREATE TABLE Services (
-    id SERIAL PRIMARY KEY,
+    service_id INTEGER REFERENCES service(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
-    description TEXT
+    description TEXT,
+    price NUMERIC(12, 2) NOT NULL,
+    limits JSONB
 );
 
-CREATE TABLE ClientServices (
+CREATE TABLE client_service (
     id SERIAL PRIMARY KEY,
-    client_id INTEGER NOT NULL REFERENCES Clients(id) ON DELETE CASCADE,
-    service_id INTEGER NOT NULL REFERENCES Services(id) ON DELETE CASCADE,
-    connected_id TIMESTAMP NOT NULL DEFAULT NOW()
+    client_id INTEGER NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES service(id) ON DELETE CASCADE,
+    tariff_id INTEGER REFERENCES tariff(id) ON DELETE SET NULL,
+    subscribed_at TIMESTAMP NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMP
 );
 
-CREATE TABLE Usage (
+CREATE TABLE "user" (
     id SERIAL PRIMARY KEY,
-    client_service_id INTEGER NOT NULL REFERENCES ClientServices(id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
-    usage_date DATE NOT NULL,
-    usage_amount NUMERIC(12, 2) NOT NULL
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(256) NOT NULL,
+    name VARCHAR(100),
+    role_id INTEGER REFERENCES role(id) ON DELETE SET NULL,
+    client_id INTEGER REFERENCES client(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE user_service (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    client_service_id INTEGER NOT NULL REFERENCES client_service(id) ON DELETE CASCADE,
+    granted_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE usage_log (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES service(id) ON DELETE CASCADE,
+    timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
+    action VARCHAR(50),
+    details JSONB
 );
