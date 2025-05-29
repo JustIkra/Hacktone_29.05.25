@@ -71,6 +71,30 @@ def usage_by_service(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    # portal_admin видит всё, client_admin — только если этот сервис подключён их клиенту
-    # проверим, что сервис существует
-    servi
+    # Проверяем, что сервис существует
+    service = crud.get_service(db, service_id)
+    if not service:
+        raise HTTPException(status_code=404, detail="Сервис не найден")
+    
+    # portal_admin — видит всё
+    if current_user.role == UserRole.portal_admin:
+        return db.query(models.Usage).join(models.ClientService).filter(
+            models.ClientService.service_id == service_id
+        ).all()
+    
+    # client_admin — видит usage только по своим клиентам (service должен быть у клиента)
+    if current_user.role == UserRole.client_admin:
+        client_id = current_user.client_id
+        # Проверяем, что этот сервис действительно подключён клиенту client_admin
+        client_service = db.query(models.ClientService).filter_by(
+            client_id=client_id, service_id=service_id
+        ).first()
+        if not client_service:
+            raise HTTPException(status_code=403, detail="Сервис не подключён вашему клиенту")
+        return db.query(models.Usage).join(models.ClientService).filter(
+            models.ClientService.client_id == client_id,
+            models.ClientService.service_id == service_id
+        ).all()
+    
+    # Обычный пользователь не имеет доступа
+    raise HTTPException(status_code=403, detail="Недостаточно прав")
