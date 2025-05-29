@@ -48,6 +48,9 @@ def delete_user(db: Session, user_id: int) -> Optional[models.User]:
 # CLIENTS
 # -------------------------
 
+def get_client_by_name(db: Session, name: str) -> Optional[models.Client]:
+    return db.query(models.Client).filter(models.Client.name == name).first()
+
 def get_client(db: Session, client_id: int) -> Optional[models.Client]:
     return db.query(models.Client).filter(models.Client.id == client_id).first()
 

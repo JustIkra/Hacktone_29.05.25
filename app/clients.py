@@ -31,9 +31,8 @@ def create_client(
     client_in: schemas.ClientCreate,
     db: Session = Depends(get_db)
 ):
-    # Проверка на уникальность
-    existing = db.query(database.Base.metadata.tables["clients"]).filter_by(name=client_in.name).first()
-    if crud.get_client(db, client_in.name):  # или по id, если придётся
+    # Проверка на уникальность по имени через crud
+    if crud.get_client_by_name(db, client_in.name):
         raise HTTPException(status_code=400, detail="Client with this name already exists")
     return crud.create_client(db, client_in)
 
@@ -48,6 +47,21 @@ def list_clients(
     current_user: User = Depends(require_role(schemas.UserRole.portal_admin)),
 ):
     return crud.get_clients(db, skip=skip, limit=limit)
+
+@router.get(
+    "/me",
+    response_model=schemas.ClientRead
+)
+def read_own_client(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user.client_id:
+        raise HTTPException(status_code=400, detail="User is not bound to any client")
+    client = crud.get_client(db, current_user.client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    return client
 
 @router.get(
     "/{client_id}",
@@ -68,20 +82,6 @@ def read_client(
             raise HTTPException(status_code=403, detail="Insufficient permissions")
     return client
 
-@router.get(
-    "/me",
-    response_model=schemas.ClientRead
-)
-def read_own_client(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    if not current_user.client_id:
-        raise HTTPException(status_code=400, detail="User is not bound to any client")
-    client = crud.get_client(db, current_user.client_id)
-    if not client:
-        raise HTTPException(status_code=404, detail="Client not found")
-    return client
 
 @router.put(
     "/{client_id}",
