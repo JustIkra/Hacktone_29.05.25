@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from app.database import Base
-import enum, datetime
+import enum
+import datetime
 
 class UserRole(enum.Enum):
     portal_admin = "portal_admin"

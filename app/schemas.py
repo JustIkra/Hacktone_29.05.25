@@ -109,3 +109,38 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[UserRole] = None
+
+# ---------------------
+# Tariff
+# ---------------------
+class TariffBase(BaseModel):
+    name: str
+    max_users: int
+    max_services: int
+    period_days: int
+    price: float
+
+class TariffCreate(TariffBase):
+    ...
+
+class TariffRead(TariffBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+# ---------------------
+# UserService (назначение пользователю сервиса)
+# ---------------------
+class UserServiceBase(BaseModel):
+    user_id: int
+    client_service_id: int
+
+class UserServiceCreate(UserServiceBase):
+    ...
+
+class UserServiceRead(UserServiceBase):
+    id: int
+
+    class Config:
+        orm_mode = True

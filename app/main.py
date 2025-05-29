@@ -1,17 +1,9 @@
 # app/main.py
 
 from fastapi import FastAPI
-from app.database import init_db
-from app.routers import (
-    auth,
-    users,
-    clients,
-    services,
-    clientservices,
-    tariffs,
-    user_service,
-    usage,
-)
+from database import init_db
+import  auth, users, clients, services, clientservices, tariffs, user_service, usage
+
 
 # Инициализация базы (создание таблиц) – для прототипа
 init_db()

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app import models, schemas, utils
+import models, schemas, utils
 
 # -------------------------
 # USERS

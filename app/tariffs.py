@@ -5,8 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app import crud, schemas, database
-from app.auth import get_current_user, require_role
+import crud, schemas, database
+from auth import get_current_user, require_role
 
 router = APIRouter(
     prefix="/tariffs",
